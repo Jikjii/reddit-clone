@@ -10,8 +10,6 @@ const Home: NextPage = () => {
       <Head>
         <title>Reddit</title>
       </Head>
-
-     <Header />
     </div>
   )
 }
