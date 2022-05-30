@@ -3,6 +3,10 @@ import React, { useState } from 'react'
 import Avatar from './Avatar'
 import { LinkIcon, PhotographIcon } from '@heroicons/react/outline'
 import { useForm } from 'react-hook-form'
+import { useMutation } from '@apollo/client'
+import { ADD_POST, ADD_SUBREDDIT } from '../graphql/mutations'
+import client from '../apollo-client'
+import { GET_SUBREDDIT_BY_TOPIC } from '../graphql/queries'
 
 type FormData = {
     postTitle: string
@@ -13,12 +17,78 @@ type FormData = {
 
 const PostBox = () => {
     const {data: session} = useSession()
+    const [addPost] = useMutation(ADD_POST)
+    const [addSubreddit] = useMutation(ADD_SUBREDDIT)
+
     const [imageBoxOpen, setImageBoxOpen] = useState<boolean>(false)
 
     const { register, setValue, handleSubmit, watch, formState: { errors}, } = useForm<FormData>() 
 
     const onSubmit = handleSubmit(async (formData) => {
         console.log(formData)
+
+        try {
+            // Query for the subreddit topic
+            const {data: { getSubredditListByTopic }, } = await client.query({
+                query: GET_SUBREDDIT_BY_TOPIC,
+                variables: {
+                    topic: formData.subreddit,
+                },
+            })
+            // this variable will be true if subreddit topic exist
+            const subredditExists = getSubredditListByTopic.length > 0
+
+            if(!subredditExists) {
+                // create subreddit
+                console.log('Subreddit is new -> creating a NEW subreddit')
+                
+                // th data being pulled from the addedSubreddit is being named insertSubreddit
+                // then it is being futher destructred into a new name -> newSubreddit
+                // the name was insertSubreddit bc thats the name in graphql file
+                const { data: { insertSubreddit: newSubreddit } } = await addSubreddit({
+                variables: {
+                    topic: formData.subreddit
+                }
+                })
+
+                console.log('creating post... ', formData)
+                const image = formData.postImage || ''
+                // if you are creating a new post for a subreddit that did not exist
+                // a new subreddit will be created 
+                const {data: { insertPost: newPost }, } = await addPost({
+                    variables: {
+                        body: formData.postBody,
+                        image: image,
+                        subreddit_id: newSubreddit.id,
+                        title: formData.postTitle,
+                        username: session?.user?.name,
+
+                    },
+                })
+
+                console.log('new post added', newPost)
+            } else {
+                // use existing subreddit
+                console.log('using existing subreddit')
+                console.log(getSubredditListByTopic)
+                // refactor this
+                const image = formData.postImage || ''
+
+                const {data: {insertPost: newPost}} = await addPost({
+                    variables: {
+                    body: formData.postBody,
+                    image: image,
+                    subreddit_id: getSubredditListByTopic[0].id,
+                    title: formData.postTitle,
+                    username: session?.user?.name,
+                    }
+                })
+
+                console.log('new post was added', newPost)
+            }
+        } catch (error) {
+            
+        }
     })
 
   return (
