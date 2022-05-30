@@ -1,6 +1,15 @@
 import Image from 'next/image'
 import React from 'react'
-import { BeakerIcon, ChevronDownIcon, HomeIcon } from '@heroicons/react/solid'
+import { BeakerIcon, ChevronDownIcon, HomeIcon, SearchIcon, MenuIcon } from '@heroicons/react/solid'
+import {
+    BellIcon,
+    ChatIcon,
+    GlobeIcon,
+    PlusIcon,
+    SparklesIcon,
+    SpeakerphoneIcon,
+    VideoCameraIcon,
+} from '@heroicons/react/outline'
 
 
 function Header() {
@@ -16,6 +25,37 @@ function Header() {
             <p className="flex-1 ml-2 hidden lg:inline">Home</p>
             <ChevronDownIcon className='h-5 w-5' />
         </div>
+        {/* search box */}
+        <form className="flex flex-1 items-center space-x-2 border border-gray-200 rounded-sm bg-gray-100 px-3 py-1">
+            <SearchIcon className=" h-6 w-6 text-gray-400"/>
+            <input className="flex-1 bg-transparent outline-none" type="text" placeholder="Search Reddit"></input>
+            {/* hidden button - just click enter after inputing search */}
+            <button type="submit" hidden />
+        </form>
+        {/* first time using tialwind css global layering below */}
+        <div className="text-gray-500 space-x-2 items-center mx-5 hidden lg:inline-flex">
+            <SparklesIcon className="icon" />
+            <GlobeIcon className="icon" />
+            <VideoCameraIcon className="icon" />
+            <hr className="h-10 border-gray-100"/>
+            <ChatIcon className="icon" />
+            <BellIcon className="icon" />
+            <PlusIcon className="icon" />
+            <SpeakerphoneIcon className="icon" />
+        </div>
+        <div  className="ml-5 flex items-center lg:hidden">
+            <MenuIcon className="icon" />  
+        </div>
+
+        {/* sign in sign out */}
+        <div className="hidden lg:flex items-center space-x-2 cursor-pointer border-gray-100 p-2 border">
+            <div className="relative h-5 w-5 flex-shrink-0">
+                <Image objectFit="contain" src="https://links.papareact.com/23l" layout="fill" alt="" />   
+            </div>
+
+            <p className="text-gray-400">Sign in</p>
+        </div>
+    
     </div>
   )
 }
