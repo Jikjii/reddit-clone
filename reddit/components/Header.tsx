@@ -10,10 +10,14 @@ import {
     SpeakerphoneIcon,
     VideoCameraIcon,
 } from '@heroicons/react/outline'
-import { signIn } from 'next-auth/react'
+import { signIn, signOut, useSession } from 'next-auth/react'
 
 
 function Header() {
+    // this allows us to pull data from the users token
+    // once they are logged in via Reddit - - > next-auth provider
+    const { data: session } = useSession()
+
   return (
     <div className="sticky top-0 z-50 flex bg-white px-4 py-2 shadow-sm">
         <div className="relative h-10 w-20 flex-shrink-0 cursor-pointer">
@@ -49,13 +53,25 @@ function Header() {
         </div>
 
         {/* sign in sign out */}
-        <div onClick={() => signIn()} className="hidden lg:flex items-center space-x-2 cursor-pointer border-gray-100 p-2 border">
-            <div className="relative h-5 w-5 flex-shrink-0">
-                <Image objectFit="contain" src="https://links.papareact.com/23l" layout="fill" alt="" />   
+        {/*  using a turnary operation to let the client side know whethere
+            the user is signed in or signed out - - > will give a different text out or in */}
+        {session ? (
+            <div onClick={() => signOut()} className="hidden lg:flex items-center space-x-2 cursor-pointer border-gray-100 p-2 border">
+                <div className="relative h-5 w-5 flex-shrink-0">
+                    <Image objectFit="contain" src="https://links.papareact.com/23l" layout="fill" alt="" />   
+                </div>
+                <p className="text-gray-400">Sign Out</p>
             </div>
-
-            <p className="text-gray-400">Sign in</p>
-        </div>
+        
+        ): (
+            <div onClick={() => signIn()} className="hidden lg:flex items-center space-x-2 cursor-pointer border-gray-100 p-2 border">
+                <div className="relative h-5 w-5 flex-shrink-0">
+                    <Image objectFit="contain" src="https://links.papareact.com/23l" layout="fill" alt="" />   
+                </div>
+                <p className="text-gray-400">Sign in</p>
+            </div>
+        )}
+        
     
     </div>
   )
