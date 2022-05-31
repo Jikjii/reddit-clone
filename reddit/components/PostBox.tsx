@@ -7,6 +7,7 @@ import { useMutation } from '@apollo/client'
 import { ADD_POST, ADD_SUBREDDIT } from '../graphql/mutations'
 import client from '../apollo-client'
 import { GET_SUBREDDIT_BY_TOPIC } from '../graphql/queries'
+import toast from 'react-hot-toast'
 
 type FormData = {
     postTitle: string
@@ -15,8 +16,9 @@ type FormData = {
     subreddit: string
 }
 
+
 const PostBox = () => {
-    const {data: session} = useSession()
+    const { data: session } = useSession()
     const [addPost] = useMutation(ADD_POST)
     const [addSubreddit] = useMutation(ADD_SUBREDDIT)
 
@@ -26,19 +28,25 @@ const PostBox = () => {
 
     const onSubmit = handleSubmit(async (formData) => {
         console.log(formData)
+        console.log('this is were it stops')
+        const notification = toast.loading('Creating new post...')
 
         try {
             // Query for the subreddit topic
+            console.log('error occurs here')
             const {data: { getSubredditListByTopic }, } = await client.query({
                 query: GET_SUBREDDIT_BY_TOPIC,
                 variables: {
                     topic: formData.subreddit,
                 },
             })
+
+            
+            
             // this variable will be true if subreddit topic exist
             const subredditExists = getSubredditListByTopic.length > 0
-
-            if(!subredditExists) {
+            
+            if (!subredditExists) {
                 // create subreddit
                 console.log('Subreddit is new -> creating a NEW subreddit')
                 
@@ -46,12 +54,13 @@ const PostBox = () => {
                 // then it is being futher destructred into a new name -> newSubreddit
                 // the name was insertSubreddit bc thats the name in graphql file
                 const { data: { insertSubreddit: newSubreddit } } = await addSubreddit({
-                variables: {
-                    topic: formData.subreddit
+                    variables: {
+                        topic: formData.subreddit
                 }
                 })
 
                 console.log('creating post... ', formData)
+
                 const image = formData.postImage || ''
                 // if you are creating a new post for a subreddit that did not exist
                 // a new subreddit will be created 
@@ -86,8 +95,24 @@ const PostBox = () => {
 
                 console.log('new post was added', newPost)
             }
+
+            // After the post has been added 
+            // this clears the value held in these states
+            setValue('postBody', '')
+            setValue('postImage', '')
+            setValue('postTitle', '')
+            setValue('subreddit', '')
+
+            toast.success('New Post Created', {
+                id: notification,
+            })
+
         } catch (error) {
-            
+            console.log('error here')
+            console.log(error)
+            toast.error('Something went wrong', {
+                id: notification,
+            })
         }
     })
 
